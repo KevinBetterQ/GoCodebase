@@ -1,51 +1,59 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
-	"net/http"
-	"sync"
-	"time"
+	"log"
+	"strings"
+	"text/template"
 )
 
+type typedElem struct {
+	ID   string
+	Size float64
+}
+
 func main() {
-	mainStart_end_ser := time.Now()
-	n := 30
-	//n := 100
-	//n := 1000
-	rsyncGet(n)
-	//Get(n)
-	mainEnd := time.Since(mainStart_end_ser)
-	fmt.Println("main cost", mainEnd.String())
-}
-
-func Get(n int) {
-	for i := 0; i < n; i++ {
-		get()
+	fmt.Println("hello")
+	/*typedElem := struct {
+		ID string `json:"Id"`
+	}{"ad3"}*/
+	testcases := []struct {
+		raw []byte
+		exp string
+	}{
+		{raw: []byte(`{"Id": "ad3", "Size": 53317}`), exp: "53317 ad3\n"},
+		{raw: []byte(`{"Id": "ad3", "Size": 53317.102}`), exp: "53317.102 ad3\n"},
+		{raw: []byte(`{"Id": "ad3", "Size": 53317.0}`), exp: "53317.0 ad3\n"},
 	}
-}
-
-func rsyncGet(n int) {
-	var wg sync.WaitGroup
-	for i := 0; i < n; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			get()
-		}()
+	f := "{{.ID}} ++++ {{.Size}}\n"
+	if strings.Contains(f, ".ID") {
+		f = strings.Replace(f, ".ID", ".Id", -1)
 	}
-	wg.Wait()
-}
-
-func get() {
-	getStart := time.Now()
-	//fmt.Println("start: ", getStart)
-	//http.Get("https://i.sigma.alibaba-inc.com/store/api/v1/label/job/values")
-	resp, err := http.Get("https://i.sigma.alibaba-inc.com/store/daily/api/v1/query?query={__name__=~%22graph_usage_avail|graph_usage_percentage%22,%20instance=%2211.12.179.220%22}")
-	//resp, err := http.Get("http://i.sigma.alibaba.net/store/api/v1/label/job/values")
+	buf := new(bytes.Buffer)
+	tmpl, err := template.New("test").Parse(f)
 	if err != nil {
-		return
+		log.Fatalf(err.Error())
 	}
-	defer resp.Body.Close()
-	getEnd := time.Since(getStart)
-	fmt.Println("get cost", getEnd.String())
+	for _, test := range testcases {
+		rdr := bytes.NewReader(test.raw)
+		dec := json.NewDecoder(rdr)
+		dec.UseNumber()
+		var raw interface{}
+		if rawErr := dec.Decode(&raw); rawErr != nil {
+			log.Fatalf("unable to read inspect data: %v", rawErr)
+		}
+		rawT := raw
+		fmt.Println("raw = : ", raw)
+		fmt.Println("rawT = : ", rawT)
+		tmplMissingKey := tmpl.Option("missingkey=error")
+		if rawErr := tmplMissingKey.Execute(buf, rawT); rawErr != nil {
+			log.Fatalf("Template parsing error: %v", rawErr)
+		}
+
+		fmt.Println(buf.String())
+
+	}
+
 }
