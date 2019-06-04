@@ -1,0 +1,27 @@
+{
+  "sites": [
+    "zth", "et2sqa", "et15sqa"
+  ],
+  "rules": [
+    {
+      "name":        "containerUnhealth",
+      "alert":       "containerUnhealth",
+      "expr":        "(sum(container_up{}) - sum(container_unhealth{})) *100 / sum(container_up{})",
+      "compare":     "<",
+      "threshold":   99.5,
+      "fortime":     "1m",
+      "summary":     "容器健康率",
+      "description": "container_unhealth{}"
+    },
+    {
+      "name":        "daemonAlert",
+      "alert":       "daemonAlert",
+      "expr":        "count(up{job='pouch_daemon'}!=0) *100 / count(up{job='pouch_container'}!=0)",
+      "compare":     "<",
+      "threshold":   97,
+      "fortime":     "10m",
+      "summary":     "daemon在线率",
+      "description": "up{job='pouch_daemon'}!=0"
+    }
+  ]
+}
