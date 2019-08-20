@@ -7,18 +7,36 @@ import (
 
 func main() {
 	//test()
-	pouchUse()
+	versionMetrics := `sadasengine_daemon_engine_info{commit="commit866",version="3.10.0-514.26.2.el7.x86_64",kernel="1.3.0"} 1`
+	regularCommit := `^.*commit="(.*?)".*$`
+	regular := regexp.MustCompile(regularCommit)
+	params := regular.FindStringSubmatch(versionMetrics)
+	fmt.Println(params[1])
+
+	regularVersion := `^.*version="(.*?)".*$`
+	regular = regexp.MustCompile(regularVersion)
+	params = regular.FindStringSubmatch(versionMetrics)
+	fmt.Println(params[1])
+
+	regularKernel := `^.*kernel="(.*?)".*$`
+	regular = regexp.MustCompile(regularKernel)
+	params = regular.FindStringSubmatch(versionMetrics)
+	fmt.Println(params[1])
 
 }
 
 func pouchUse() {
-	str := `engine_daemon_engine_info{gitCommit="1.3.0-53-g938058f",kernelVersion="3.10.0-514.26.2.el7.x86_64",pouchVersion="1.3.0"} 1`
-	regularStr := `^engine_daemon_engine_info{gitCommit="(.*)",kernelVersion="(.*)",pouchVersion="(.*)"} 1$`
+	str := `sadasengine_daemon_engine_info{commit="",version="3.10.0-514.26.2.el7.x86_64",kernel="1.3.0"} 1`
+	regularStr := `^.*commit="(.*)",version="(.*)",kernel="(.*)".*$`
 	regular := regexp.MustCompile(regularStr)
 	params := regular.FindStringSubmatch(str)
-	for _, param := range params {
+	fmt.Println("0: " + params[0])
+	fmt.Println("1: " + params[1])
+	fmt.Println("2: " + params[2])
+	fmt.Println("3: " + params[3])
+	/*for _, param := range params {
 		fmt.Println(param)
-	}
+	}*/
 }
 
 func test() {

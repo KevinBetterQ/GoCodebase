@@ -14,7 +14,7 @@ type Response struct {
 	Data string `json:"data"`
 }
 
-var rawElement = []byte(` {"Id":200,"msg":"success","data":"Macbook"}`)
+var rawElement = []byte(`{"ID":200,"msg":"success","data":"Macbook"}`)
 
 func main() {
 	var raw interface{}
@@ -27,6 +27,7 @@ func main() {
 	if rawErr := dec.Decode(&raw); rawErr != nil {
 		fmt.Errorf("unable to read inspect data: %v", rawErr)
 	}
+	fmt.Println(rawElement)
 	fmt.Println(raw)
 
 	tmpl := template.New("t1")
